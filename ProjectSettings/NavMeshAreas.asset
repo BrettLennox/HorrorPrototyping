@@ -13,8 +13,8 @@ NavMeshProjectSettings:
     cost: 2
   - name: 
     cost: 1
-  - name: 
-    cost: 1
+  - name: Wall
+    cost: 2
   - name: 
     cost: 1
   - name: 

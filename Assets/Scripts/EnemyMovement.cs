@@ -37,7 +37,7 @@ public class EnemyMovement : MonoBehaviour
     void Update()
     {
         NavMeshPath path = new NavMeshPath();
-        if (NavMesh.CalculatePath(transform.position, _movePosition.transform.position, NavMesh.AllAreas, _path))
+        if (NavMesh.CalculatePath(transform.position, _movePosition.transform.position, NavMesh.GetAreaFromName("Walkable"), _path))
         {
             _agent.SetPath(_path);
             _pathPointsCount = _path.GetCornersNonAlloc(_pathCorners);
