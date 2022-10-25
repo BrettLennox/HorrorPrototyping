@@ -28,6 +28,8 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private float _moveOffset = 0.5f;
 
     private bool shouldMove = true;
+    private float turnDir;
+    private bool checkedTurn = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -79,7 +81,6 @@ public class EnemyMovement : MonoBehaviour
             //}
         }
 
-
         if (shouldMove)
         {
             if (Vector3.Distance(transform.position, _movePosition.position) < _moveOffset)
@@ -111,11 +112,26 @@ public class EnemyMovement : MonoBehaviour
             {
                 _animator.SetFloat("y", yMove, dampTime, Time.deltaTime);
                 _animator.SetFloat("x", 0f, dampTime, Time.deltaTime);
+                checkedTurn = false;
             }
             else
             {
+                if (!checkedTurn)
+                {
+                    float turnAngle = Vector3.Angle(transform.forward, _pathCorners[index]);
+                    //turnAngle <= 90f ? xMove : -xMove
+                    if (turnAngle <= 90f)
+                    {
+                        turnDir = xMove;
+                    }
+                    else
+                    {
+                        turnDir = -xMove;
+                    }
+                    checkedTurn = true;
+                }
                 _animator.SetFloat("y", 0f, dampTime, Time.deltaTime);
-                _animator.SetFloat("x", xMove, dampTime, Time.deltaTime);
+                _animator.SetFloat("x", turnDir, dampTime, Time.deltaTime);
             }
 
             //if (isFacing)
