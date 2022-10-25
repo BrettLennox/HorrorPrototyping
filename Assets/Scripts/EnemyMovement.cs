@@ -15,6 +15,8 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private Transform _movePosition;
     [SerializeField] private Vector3[] _pathCorners;
     [SerializeField] private NavMeshPath _path;
+    [SerializeField] private float pathUpdateTimer = 1f;
+    private float timer = Mathf.Infinity;
     [SerializeField] private int _pathPointsCount;
     [SerializeField] private int index;
     bool isFacing;
@@ -23,6 +25,7 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private float yMove = 0.5f;
     [SerializeField] private float xMove = 1f;
     [SerializeField] private float dampTime = 1f;
+    [SerializeField] private float _moveOffset = 0.5f;
 
     private bool shouldMove = true;
     // Start is called before the first frame update
@@ -36,33 +39,60 @@ public class EnemyMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        NavMeshPath path = new NavMeshPath();
-        if (NavMesh.CalculatePath(transform.position, _movePosition.transform.position, NavMesh.GetAreaFromName("Walkable"), _path))
+        timer += Time.deltaTime;
+
+        //NavMeshPath path = new NavMeshPath();
+        if (timer >= pathUpdateTimer)
         {
-            _agent.SetPath(_path);
+            timer = 0f;
+            NavMesh.CalculatePath(transform.position, _movePosition.position, NavMesh.AllAreas, _path);
+            //_agent.SetDestination(_movePosition.position);
+            //_path = _agent.path;
             _pathPointsCount = _path.GetCornersNonAlloc(_pathCorners);
-            _path.GetCornersNonAlloc(_pathCorners);
-//
+
             while (_pathCorners.Length <= _pathPointsCount)
             {
                 Array.Resize(ref _pathCorners, _pathCorners.Length * 2);
                 _pathPointsCount = _path.GetCornersNonAlloc(_pathCorners);
             }
+
+            for (int i = 0; i < _path.corners.Length - 1; i++)
+            {
+                if (i < _path.corners.Length)
+                {
+                    Debug.DrawLine(_path.corners[i], _path.corners[i + 1], Color.red, 1f);
+                }
+                else { break; }
+            }
+
+            //if (NavMesh.CalculatePath(transform.position, _movePosition.transform.position, NavMesh.AllAreas, _path))
+            //{
+            //    _agent.SetPath(_path);
+            //    _pathPointsCount = _path.GetCornersNonAlloc(_pathCorners);
+            //    _path.GetCornersNonAlloc(_pathCorners);
+            //    //
+            //    while (_pathCorners.Length <= _pathPointsCount)
+            //    {
+            //        Array.Resize(ref _pathCorners, _pathCorners.Length * 2);
+            //        _pathPointsCount = _path.GetCornersNonAlloc(_pathCorners);
+            //    }
+            //}
         }
+
 
         if (shouldMove)
         {
-            if (Vector3.Distance(transform.position, _movePosition.position) < 0.5f)
+            if (Vector3.Distance(transform.position, _movePosition.position) < _moveOffset)
             {
                 shouldMove = false;
             }
             Vector3 dirFromAToB = (_pathCorners[index] - transform.position).normalized;
             float dotProd = Vector3.Dot(dirFromAToB, transform.forward);
-            if (Vector3.Distance(transform.position, _pathCorners[index]) < 0.5f)
+            if (Vector3.Distance(transform.position, _pathCorners[index]) < _moveOffset)
             {
                 //isFacing = false;
                 index++;
-                if (index == path.corners.Length)
+                if (index == _path.corners.Length)
                 {
                     shouldMove = false;
                 }
@@ -79,7 +109,7 @@ public class EnemyMovement : MonoBehaviour
 
             if (isFacing)
             {
-                _animator.SetFloat("y", yMove, dampTime,Time.deltaTime);
+                _animator.SetFloat("y", yMove, dampTime, Time.deltaTime);
                 _animator.SetFloat("x", 0f, dampTime, Time.deltaTime);
             }
             else
@@ -112,14 +142,14 @@ public class EnemyMovement : MonoBehaviour
             //    }
             //}
         }
-        else if(!shouldMove && Vector3.Distance(transform.position, _movePosition.position) > 0.5f)
+        else if (!shouldMove && Vector3.Distance(transform.position, _movePosition.position) > 0.5f)
         {
             shouldMove = true;
         }
         else
         {
-            _animator.SetFloat("y", Mathf.SmoothStep(_animator.GetFloat("y"),0f, stepTime));
-            _animator.SetFloat("x", Mathf.SmoothStep(_animator.GetFloat("x"),0f, stepTime));
+            _animator.SetFloat("y", Mathf.SmoothStep(_animator.GetFloat("y"), 0f, stepTime));
+            _animator.SetFloat("x", Mathf.SmoothStep(_animator.GetFloat("x"), 0f, stepTime));
         }
     }
 }
