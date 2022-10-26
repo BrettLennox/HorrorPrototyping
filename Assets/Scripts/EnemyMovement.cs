@@ -42,14 +42,13 @@ public class EnemyMovement : MonoBehaviour
     void Update()
     {
         timer += Time.deltaTime;
-
-        //NavMeshPath path = new NavMeshPath();
+        Vector3 targetDir = _pathCorners[index] - transform.position;
+        float newAngle = Vector3.Angle(targetDir, transform.forward);
+        Debug.Log(newAngle);
         if (timer >= pathUpdateTimer)
         {
             timer = 0f;
             NavMesh.CalculatePath(transform.position, _movePosition.position, NavMesh.AllAreas, _path);
-            //_agent.SetDestination(_movePosition.position);
-            //_path = _agent.path;
             _pathPointsCount = _path.GetCornersNonAlloc(_pathCorners);
 
             while (_pathCorners.Length <= _pathPointsCount)
@@ -66,19 +65,6 @@ public class EnemyMovement : MonoBehaviour
                 }
                 else { break; }
             }
-
-            //if (NavMesh.CalculatePath(transform.position, _movePosition.transform.position, NavMesh.AllAreas, _path))
-            //{
-            //    _agent.SetPath(_path);
-            //    _pathPointsCount = _path.GetCornersNonAlloc(_pathCorners);
-            //    _path.GetCornersNonAlloc(_pathCorners);
-            //    //
-            //    while (_pathCorners.Length <= _pathPointsCount)
-            //    {
-            //        Array.Resize(ref _pathCorners, _pathCorners.Length * 2);
-            //        _pathPointsCount = _path.GetCornersNonAlloc(_pathCorners);
-            //    }
-            //}
         }
 
         if (shouldMove)
