@@ -19,7 +19,6 @@ public class EnemyMovement : MonoBehaviour
     private float timer = Mathf.Infinity;
     [SerializeField] private int _pathPointsCount;
     [SerializeField] private int index;
-    bool isFacing;
     [SerializeField] private float stepTime = 10f;
     [SerializeField] private float angle = 0.9f;
     [SerializeField] private float yMove = 0.5f;
@@ -42,9 +41,6 @@ public class EnemyMovement : MonoBehaviour
     void Update()
     {
         timer += Time.deltaTime;
-        Vector3 targetDir = _pathCorners[index] - transform.position;
-        float newAngle = Vector3.Angle(targetDir, transform.forward);
-        Debug.Log(newAngle);
         if (timer >= pathUpdateTimer)
         {
             timer = 0f;
@@ -77,7 +73,6 @@ public class EnemyMovement : MonoBehaviour
             float dotProd = Vector3.Dot(dirFromAToB, transform.forward);
             if (Vector3.Distance(transform.position, _pathCorners[index]) < _moveOffset)
             {
-                //isFacing = false;
                 index++;
                 if (index == _path.corners.Length)
                 {
@@ -87,15 +82,6 @@ public class EnemyMovement : MonoBehaviour
 
             if (dotProd > angle)
             {
-                isFacing = true;
-            }
-            else
-            {
-                isFacing = false;
-            }
-
-            if (isFacing)
-            {
                 _animator.SetFloat("y", yMove, dampTime, Time.deltaTime);
                 _animator.SetFloat("x", 0f, dampTime, Time.deltaTime);
                 checkedTurn = false;
@@ -104,13 +90,14 @@ public class EnemyMovement : MonoBehaviour
             {
                 if (!checkedTurn)
                 {
-                    float turnAngle = Vector3.Angle(transform.forward, _pathCorners[index]);
-                    //turnAngle <= 90f ? xMove : -xMove
-                    if (turnAngle <= 90f)
+                    Vector3 from = _pathCorners[index] - transform.position;
+                    Vector3 to = transform.up;
+                    float turnAngle = Vector3.SignedAngle(from, to, transform.forward);
+                    if (turnAngle == 90f)
                     {
                         turnDir = xMove;
                     }
-                    else
+                    else if (turnAngle == -90f)
                     {
                         turnDir = -xMove;
                     }
@@ -119,30 +106,6 @@ public class EnemyMovement : MonoBehaviour
                 _animator.SetFloat("y", 0f, dampTime, Time.deltaTime);
                 _animator.SetFloat("x", turnDir, dampTime, Time.deltaTime);
             }
-
-            //if (isFacing)
-            //{
-            //    _animator.SetFloat("y", Mathf.SmoothStep(_animator.GetFloat("y"), 1f, stepTime));
-            //    _animator.SetFloat("x", Mathf.SmoothStep(_animator.GetFloat("x"),0f, stepTime));
-            //    if (dotProd < 0.5f)
-            //    {
-            //        isFacing = false;
-            //    }
-            //}
-            //else
-            //{
-            //    _animator.SetFloat("y", Mathf.SmoothStep(_animator.GetFloat("y"),0.5f, 2f));
-            //    _animator.SetFloat("x", Mathf.SmoothStep(_animator.GetFloat("x"),1f,stepTime));
-            //    if (dotProd > angle)
-            //    {
-            //        _animator.SetFloat("x", Mathf.SmoothStep(_animator.GetFloat("x"),0f, stepTime));
-            //        isFacing = true;
-            //    }
-            //    else
-            //    {
-            //        _animator.SetFloat("x", Mathf.SmoothStep(_animator.GetFloat("x"),xMove, stepTime));
-            //    }
-            //}
         }
         else if (!shouldMove && Vector3.Distance(transform.position, _movePosition.position) > 0.5f)
         {
